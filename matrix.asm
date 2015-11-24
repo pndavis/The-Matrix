@@ -1,4 +1,16 @@
-.text   ###################
+.text   
+	# t0 - Terminal pointer
+	# t1 - Color storage
+	# t2 - Location storage
+	# t3 - isValid counter
+	# t4 - counter
+	# t8 - SP backup
+	# t9 - Total columns
+	# s1 - column
+	# s2 - speed
+	# s7 - to backup sp
+	
+	###################
 	addi $t9, $zero, 60			# NUMBER OF LINES. Change only this value to change the number of lines. Max is 78
 	###################
 	la $t0, 0xffff8000			# Start value of terminal
@@ -35,13 +47,7 @@ resetreturn:
 	j mainLoop
 	
 mainLoop:
-	#t4 - counter
-	#t9 - Total columns
-	#s1 - column
-	#s2 - speed
-	
-	bge $t4, $t9, main
-	
+	bge $t4, $t9, main			# Run mainLoop t9 number of times
 	lb $s1, ($sp)
 	addi $sp, $sp, 1
 	lb $s2, ($sp)
@@ -58,7 +64,7 @@ skip:
 	addi $sp, $sp, 2			# Stack = Stack + 2
 	j mainLoop
 resetSwitch:
-	addi $s6, $zero, 5
+	addi $s6, $zero, 5			# Flip s6 from 0 to 5
 	j resetreturn
 
 _newColumn:
@@ -91,7 +97,7 @@ _newColumn:
 	addi $t1, $t1, 0x0000dd00
 	andi $t2, $t2, 0xff000000
 	or $t1, $t1, $t2
-	sw $t1, ($t0)
+	sw $t1, ($t0)				# Store to the Terminal
 	jr $ra
 	
 _isValid:
@@ -114,7 +120,7 @@ _iterate:
 	add $t0, $t0, 0xffff8000
 iterateLoop:
 	bgt $t0, 0xffffb1ff, iReturn		# If we hit the end of the terminal, return
-	lw $t1, ($t0)
+	lw $t1, ($t0)				# Load current terminal value
 	lw $t2, ($t0)
 	andi $t1, $t1, 0x0000ff00
 	andi $t2, $t2, 0xff000000
@@ -125,8 +131,8 @@ iterateLoop:
 	bge $t1, 0x0000ff00, iterateFF		# if the color is ff, jump to iterateff
 	subi $t1, $t1, 0x00001100		# Turn the color 1 shade lighter
 	or $t1, $t1, $t2
-	sw $t1, ($t0)
-	addi $t0, $t0, 320
+	sw $t1, ($t0)				# Store to the Terminal
+	addi $t0, $t0, 320			# Terminal++
 	j iterateLoop
 iterateFF:	
 	subi $t1, $t1, 0x00001100		# Turn the ff color to ee
